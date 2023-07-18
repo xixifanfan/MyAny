@@ -59,8 +59,10 @@ public:
         return *this;
     }
     //enable_if来防止递归调用拷贝构造函数，进入死循环
-    template<typename T,class = typename enable_if<!is_same<typename decay<T>::type, myany>::value, T>::type>//decay去掉cv修饰符
-    myany(T&& value):val(new Value<typename decay<T>::type>(forward<T>(value))), valType(type_index(typeid(typename decay<T>::type))) {}
+    template<typename T,class = typename enable_if_t<!is_same<typename decay_t<T>, myany>::value, T>>//decay去掉cv修饰符
+    myany(T&& value)
+        :val(new Value<typename decay<T>::type>(forward<T>(value))), 
+        valType(type_index(typeid(typename decay<T>::type))) {}
     //判断是否有值
     bool hasVal()const
     {
@@ -91,6 +93,9 @@ int main()
     using Any = myany;
     Any a(10);
     //a = 10;
+    a = 20;
     cout << a.anyCast<int>() << endl;
+    a = string("hello,world");
+    cout << a.anyCast<string>() << endl;
 }
 
