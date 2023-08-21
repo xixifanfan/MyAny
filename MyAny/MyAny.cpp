@@ -1,4 +1,4 @@
-﻿/**
+/**
 *  项目名称：简易的C++17 any实现
 *  version:1.0
 */
@@ -24,21 +24,23 @@ private:
     public:
         T value;
         template<typename U>
-        Value(U&& value) :value(forward<U>(value)) {}  //Value(T value):value(value){}
+        Value(U&& value) :value(forward<U>(value)) {}  
         ValHandle_ptr clone()const override
         {
             return ValHandle_ptr(new Value<T>(value));
         }
     };
+    //基类指针用于强转成子类   dynamic_cast<>()
+    ValHandle_ptr val;
+    //保存现在值类型
+    type_index valType;
+
     ValHandle_ptr clone()const
     {
         if (val)return val->clone();
         return nullptr;
     }
-    //基类指针用于强转成子类   dynamic_cast<>()
-    ValHandle_ptr val;
-    //保存现在值类型
-    type_index valType;
+    
 public:
     myany():val(nullptr),valType(type_index(typeid(nullptr_t))){}
     //拷贝构造和拷贝赋值函数
@@ -51,8 +53,8 @@ public:
         return *this;
     }
     //移动构造和移动赋值函数
-    myany(myany&& any):val(exchange(any.val,nullptr)),valType(any.valType){}
-    myany& operator=(myany&& any)
+    myany(myany&& any)noexcept:val(exchange(any.val,nullptr)),valType(any.valType){}
+    myany& operator=(myany&& any)noexcept
     {
         val = move(any.val);
         valType = any.valType;
