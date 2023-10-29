@@ -23,13 +23,14 @@ private:
     {
     public:
         T value;
-        template<typename U>
-        Value(U&& value) :value(forward<U>(value)) {}  
+        template<typename ...Args>
+        Value(Args&&... value) :value(forward<Args>(value)...) {}  
         ValHandle_ptr clone()const override
         {
-            return ValHandle_ptr(new Value<T>(value));
+            return ValHandle_ptr(new(nothrow) Value<T>(value));
         }
     };
+private:
     //基类指针用于强转成子类   dynamic_cast<>()
     ValHandle_ptr val;
     //保存现在值类型
@@ -53,7 +54,7 @@ public:
         return *this;
     }
     //移动构造和移动赋值函数
-    myany(myany&& any)noexcept:val(exchange(any.val,nullptr)),valType(any.valType){}
+    myany(myany&& any)noexcept:val(exchange(any.val,nullptr)),valType(exchange(any.valType,type_index(typeid(nullptr_t)))){}
     myany& operator=(myany&& any)noexcept
     {
         val = move(any.val);
@@ -94,10 +95,13 @@ int main()
 {
     using Any = myany;
     Any a(10);
+    
     //a = 10;
     a = 20;
     cout << a.anyCast<int>() << endl;
     a = string("hello,world");
     cout << a.anyCast<string>() << endl;
+    Any b(a);
+    cout << b.anyCast<string>() << endl;
 }
 
